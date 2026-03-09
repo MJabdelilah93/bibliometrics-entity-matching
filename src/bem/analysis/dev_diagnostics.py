@@ -5,12 +5,12 @@ distribution tables and exports CSV samples for manual inspection.
 
 Usage
 -----
-    python -m vs2.analysis.dev_diagnostics \\
+    python -m bem.analysis.dev_diagnostics \\
         --run_id 20260308_173145_sueeqr \\
         --out runs/20260308_173145_sueeqr/analysis
 
     # Override default benchmark paths:
-    python -m vs2.analysis.dev_diagnostics \\
+    python -m bem.analysis.dev_diagnostics \\
         --run_id 20260308_173145_sueeqr \\
         --out runs/20260308_173145_sueeqr/analysis \\
         --benchmark_and data/derived/benchmark_pairs_and.parquet \\
@@ -294,7 +294,7 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent("""\
             Example:
-              python -m vs2.analysis.dev_diagnostics \\
+              python -m bem.analysis.dev_diagnostics \\
                   --run_id 20260308_173145_sueeqr \\
                   --out runs/20260308_173145_sueeqr/analysis
         """),
@@ -309,7 +309,7 @@ def main() -> None:
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"vs2 dev diagnostics")
+    print(f"bem dev diagnostics")
     print(f"  run_id : {args.run_id}")
     print(f"  out    : {out_dir}")
 

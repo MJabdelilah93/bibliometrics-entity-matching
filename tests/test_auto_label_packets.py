@@ -9,7 +9,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from vs2.benchmark.auto_label_packets import (
+from bem.benchmark.auto_label_packets import (
     _and_label,
     _ain_label,
     _and_signals,
@@ -170,7 +170,7 @@ class TestParseAcronymsPipe:
 
 class TestValidateSchema:
     def test_passes_when_all_columns_present(self):
-        from vs2.benchmark.auto_label_packets import AND_REQUIRED_COLS
+        from bem.benchmark.auto_label_packets import AND_REQUIRED_COLS
         df = pd.DataFrame(columns=AND_REQUIRED_COLS)
         _validate_schema(df, AND_REQUIRED_COLS, "AND")  # should not raise
 

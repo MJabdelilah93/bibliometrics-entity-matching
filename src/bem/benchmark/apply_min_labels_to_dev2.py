@@ -13,7 +13,7 @@ Label mapping
 
 Usage
 -----
-    python -m vs2.benchmark.apply_min_labels_to_dev2 --in_dir data/derived --prefix dev2
+    python -m bem.benchmark.apply_min_labels_to_dev2 --in_dir data/derived --prefix dev2
 
 Inputs
 ------
@@ -229,7 +229,7 @@ def main(argv: list[str] | None = None) -> None:
 
     print("\nPacking benchmark parquets ...")
     cmd = [
-        sys.executable, "-m", "vs2.benchmark.pack_benchmark_pairs",
+        sys.executable, "-m", "bem.benchmark.pack_benchmark_pairs",
         "--in_dir", str(in_dir),
         "--prefix", prefix,
     ]

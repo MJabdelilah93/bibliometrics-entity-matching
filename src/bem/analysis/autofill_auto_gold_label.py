@@ -12,7 +12,7 @@ Resume support: rows where auto_gold_label is already non-empty are skipped.
 
 Usage
 -----
-    python -m vs2.analysis.autofill_auto_gold_label ^
+    python -m bem.analysis.autofill_auto_gold_label ^
         --prefix dev2 ^
         --in_dir data/derived ^
         --backend anthropic_api ^
@@ -53,15 +53,15 @@ import pandas as pd
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, ValidationError
 
-from vs2.llm_verify.evidence_cards import build_and_evidence, build_ain_evidence
-from vs2.llm_verify.verifier import check_and_truncate_evidence
+from bem.llm_verify.evidence_cards import build_and_evidence, build_ain_evidence
+from bem.llm_verify.verifier import check_and_truncate_evidence
 
 
 # ---------------------------------------------------------------------------
 # Load .env before any os.environ access
 # ---------------------------------------------------------------------------
 
-_repo_root = Path(__file__).resolve().parents[3]   # vs2/
+_repo_root = Path(__file__).resolve().parents[3]   # bem/
 load_dotenv(dotenv_path=_repo_root / ".env", override=False)
 
 

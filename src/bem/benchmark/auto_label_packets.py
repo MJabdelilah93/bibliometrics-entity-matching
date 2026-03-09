@@ -6,7 +6,7 @@ modified.  Auto labels are NOT gold-standard; human labels remain authoritative.
 
 Usage
 -----
-    python -m vs2.benchmark.auto_label_packets \\
+    python -m bem.benchmark.auto_label_packets \\
         --in_dir  data/derived \\
         --out_dir data/derived \\
         --config  configs/run_config.yaml

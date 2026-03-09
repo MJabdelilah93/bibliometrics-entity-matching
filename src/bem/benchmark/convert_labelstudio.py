@@ -1,4 +1,4 @@
-"""convert_labelstudio.py — Convert Label Studio annotation exports to VS2 benchmark parquets.
+"""convert_labelstudio.py — Convert Label Studio annotation exports to BEM benchmark parquets.
 
 Reads a Label Studio export (CSV or JSON) containing pairwise AND / AIN annotation
 decisions and writes two benchmark parquet files:
@@ -16,7 +16,7 @@ Each output file has the schema:
 
 Usage
 -----
-    python -m vs2.benchmark.convert_labelstudio \\
+    python -m bem.benchmark.convert_labelstudio \\
         --input path/to/labelstudio_export.csv \\
         --format auto \\
         --task auto \\
@@ -333,7 +333,7 @@ def convert(
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
-        description="Convert a Label Studio export to VS2 benchmark parquets.",
+        description="Convert a Label Studio export to BEM benchmark parquets.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

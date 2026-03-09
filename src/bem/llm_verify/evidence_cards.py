@@ -22,7 +22,7 @@ from typing import Any
 
 import pandas as pd
 
-from vs2.normalise.normalise import strip_scopus_author_id
+from bem.normalise.normalise import strip_scopus_author_id
 
 
 # ---------------------------------------------------------------------------

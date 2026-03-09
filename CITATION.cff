@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
-title: "VS2: A Reproducible LLM-DAG Pipeline for Bibliometric Entity Matching"
+title: "BEM: A Reproducible LLM-DAG Pipeline for Bibliometric Entity Matching"
 abstract: >
-  VS2 is a reproducible entity-matching pipeline for bibliometric data
+  BEM is a reproducible entity-matching pipeline for bibliometric data
   exported from the Scopus UI. It resolves Author Name Disambiguation (AND)
   and Affiliation Name Normalisation (AIN) using a multi-stage DAG with
   optional LLM verification.
@@ -15,7 +15,7 @@ authors:
 version: "2.0.0"
 date-released: "2026-03-09"
 license: MIT
-repository-code: "https://github.com/<YOUR_GITHUB_USERNAME>/vs2-entity-matching"
+repository-code: "https://github.com/MJabdelilah93/bibliometrics-entity-matching"
 keywords:
   - bibliometrics
   - entity matching

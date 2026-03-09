@@ -11,7 +11,7 @@ the annotator can fill it directly in Excel:
 
 Usage
 -----
-    python -m vs2.benchmark.make_min_annotation_files --in_dir data/derived --prefix dev2
+    python -m bem.benchmark.make_min_annotation_files --in_dir data/derived --prefix dev2
 
 Outputs
 -------
@@ -233,7 +233,7 @@ def main(argv: list[str] | None = None) -> None:
     print("  2. Fill the 'gold_label_code' column for every row:")
     print("       0 = uncertain   1 = non-match   2 = match")
     print("  3. Save (keep CSV format).")
-    print(f"  4. Run: python -m vs2.benchmark.apply_min_labels_to_dev2 "
+    print(f"  4. Run: python -m bem.benchmark.apply_min_labels_to_dev2 "
           f"--in_dir {args.in_dir} --prefix {args.prefix}")
 
 

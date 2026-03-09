@@ -1,6 +1,6 @@
-# Reproducibility Guide for VS2
+# Reproducibility Guide for BEM
 
-This document explains how to reproduce the VS2 entity-matching pipeline
+This document explains how to reproduce the BEM entity-matching pipeline
 results using your own Scopus UI exports.
 
 ---
@@ -23,7 +23,7 @@ pip install -e .
 
 ## 2. Scopus UI Exports (33-column schema)
 
-VS2 ingests **Scopus UI CSV exports only** — no Scopus API, no external data.
+BEM ingests **Scopus UI CSV exports only** — no Scopus API, no external data.
 
 ### How to export from Scopus
 
@@ -65,7 +65,7 @@ inputs:
 Then run:
 
 ```bash
-python -m vs2 --config configs/run_config.yaml
+python -m bem --config configs/run_config.yaml
 ```
 
 Each run writes a timestamped manifest under `runs/<run_id>/manifests/`.
@@ -74,7 +74,7 @@ Each run writes a timestamped manifest under `runs/<run_id>/manifests/`.
 
 ## 4. LLM Backend Modes
 
-VS2 supports two LLM backends, controlled by `llm.backend` in the config:
+BEM supports two LLM backends, controlled by `llm.backend` in the config:
 
 ### `requests_only` (default, no API key needed)
 
@@ -113,7 +113,7 @@ is ever used to suggest or decide match/non-match labels.
 ### Step 1 — Run C1–C4 to generate candidate pairs
 
 ```bash
-python -m vs2 --config configs/run_config.yaml
+python -m bem --config configs/run_config.yaml
 ```
 
 This produces `data/interim/candidates_and.parquet` and
@@ -122,7 +122,7 @@ This produces `data/interim/candidates_and.parquet` and
 ### Step 2 — Sample pairs for annotation
 
 ```bash
-python -m vs2.benchmark.sample_benchmark_tasks --out_dir data/derived --seed 42
+python -m bem.benchmark.sample_benchmark_tasks --out_dir data/derived --seed 42
 ```
 
 Writes `data/derived/annotation_tasks_and.csv` and `_ain.csv` with 5 000
@@ -131,7 +131,7 @@ pairs per task across five similarity-quintile bands.
 ### Step 3 — Build evidence packets
 
 ```bash
-python -m vs2.benchmark.build_annotation_packets \
+python -m bem.benchmark.build_annotation_packets \
     --in_dir data/derived \
     --out_dir data/derived \
     --only_dev false
@@ -156,8 +156,8 @@ For each row, enter one of the following in the `gold_label` column:
 ### Step 5 — Pack to parquet and run C5
 
 ```bash
-python -m vs2.benchmark.pack_benchmark_pairs --in_dir data/derived
-python -m vs2 --config configs/run_config.yaml
+python -m bem.benchmark.pack_benchmark_pairs --in_dir data/derived
+python -m bem --config configs/run_config.yaml
 ```
 
 ---
@@ -169,10 +169,10 @@ For a compact Excel workflow with numeric codes (0 = uncertain, 1 = non-match,
 
 ```bash
 # Generate minimal files
-python -m vs2.benchmark.make_min_annotation_files --in_dir data/derived --prefix dev2
+python -m bem.benchmark.make_min_annotation_files --in_dir data/derived --prefix dev2
 
 # After annotating in Excel:
-python -m vs2.benchmark.apply_min_labels_to_dev2 --in_dir data/derived --prefix dev2
+python -m bem.benchmark.apply_min_labels_to_dev2 --in_dir data/derived --prefix dev2
 ```
 
 ---
@@ -182,7 +182,7 @@ python -m vs2.benchmark.apply_min_labels_to_dev2 --in_dir data/derived --prefix 
 Before manual annotation, you may pre-fill obvious cases deterministically:
 
 ```bash
-python -m vs2.benchmark.autofill_gold_labels \
+python -m bem.benchmark.autofill_gold_labels \
     --and_in  data/derived/annotation_packets_and.csv \
     --ain_in  data/derived/annotation_packets_ain.csv \
     --and_out data/derived/annotation_packets_and.csv \

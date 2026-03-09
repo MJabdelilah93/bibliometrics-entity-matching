@@ -18,9 +18,9 @@ from typing import Any
 
 @dataclass
 class RunManifest:
-    """Provenance record for a single VS2 pipeline run."""
+    """Provenance record for a single BEM pipeline run."""
 
-    vs2_run_id: str
+    bem_run_id: str
     timestamp_iso: str
     timezone: str
     config_path: str

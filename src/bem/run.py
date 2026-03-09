@@ -1,20 +1,20 @@
-"""run.py — CLI runner for the VS2 pipeline (C1 + C2 + C3 checkpoints).
+"""run.py — CLI runner for the BEM pipeline (C1 + C2 + C3 checkpoints).
 
 Usage:
-    python -m vs2 --config configs/run_config.yaml
+    python -m bem --config configs/run_config.yaml
 
 This runner:
   1. Loads and hashes the run config.
   2. Loads and hashes the schema headers file.
-  3. Creates a unique run directory under runs/<vs2_run_id>/.
-  4. Writes runs/<vs2_run_id>/manifests/run_manifest.json              (C1).
+  3. Creates a unique run directory under runs/<bem_run_id>/.
+  4. Writes runs/<bem_run_id>/manifests/run_manifest.json              (C1).
   5. Ingests Q1 and Q2 CSV batches with strict schema validation       (C2).
   6. Writes data/interim/records_canonical.parquet.
-  7. Writes runs/<vs2_run_id>/manifests/export_manifest.json.
+  7. Writes runs/<bem_run_id>/manifests/export_manifest.json.
   8. Applies deterministic normalisation to the canonical records      (C3).
   9. Writes data/interim/records_normalised.parquet.
- 10. Writes runs/<vs2_run_id>/manifests/normalisation_manifest.json.
- 11. Writes runs/<vs2_run_id>/logs/normalisation_log.jsonl.
+ 10. Writes runs/<bem_run_id>/manifests/normalisation_manifest.json.
+ 11. Writes runs/<bem_run_id>/logs/normalisation_log.jsonl.
  12. Prints a short summary per stage.
 
 No candidate generation, LLM verification, or matching logic is executed.
@@ -36,7 +36,7 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
-from vs2.artefacts.manifests import (
+from bem.artefacts.manifests import (
     RunManifest,
     compute_dataframe_stats,
     sha256_file,
@@ -46,7 +46,7 @@ from vs2.artefacts.manifests import (
     write_normalisation_manifest,
     write_run_manifest,
 )
-from vs2.candidates.generate import (
+from bem.candidates.generate import (
     AND_PASS_DEFS,
     AIN_PASS_DEFS,
     MAX_BLOCK_SIZE_AIN,
@@ -55,18 +55,18 @@ from vs2.candidates.generate import (
     YEAR_WINDOW,
     run_candidate_generation,
 )
-from vs2.ingest.ingest import (
+from bem.ingest.ingest import (
     build_canonical_records,
     ingest_scopus_exports,
     load_expected_headers,
 )
-from vs2.normalise.normalise import apply_normalisation
-from vs2.llm_verify.evidence_cards import build_and_evidence, build_ain_evidence
-from vs2.llm_verify.pair_loader import get_pairs_for_task
-from vs2.llm_verify.verifier import run_verification, write_verification_diagnostics
-from vs2.guards.apply_guards import load_llm_decisions_jsonl, apply_guards, filter_routing_to_benchmark
-from vs2.guards.tune_thresholds import join_with_gold, tune_t_match, write_thresholds_manifest
-from vs2.aggregate.cluster import run_c7_task, write_aggregation_manifest
+from bem.normalise.normalise import apply_normalisation
+from bem.llm_verify.evidence_cards import build_and_evidence, build_ain_evidence
+from bem.llm_verify.pair_loader import get_pairs_for_task
+from bem.llm_verify.verifier import run_verification, write_verification_diagnostics
+from bem.guards.apply_guards import load_llm_decisions_jsonl, apply_guards, filter_routing_to_benchmark
+from bem.guards.tune_thresholds import join_with_gold, tune_t_match, write_thresholds_manifest
+from bem.aggregate.cluster import run_c7_task, write_aggregation_manifest
 
 
 # ---------------------------------------------------------------------------
@@ -124,7 +124,7 @@ def _print_recommended_action(counts: Any) -> None:
         return
     top_cls = counts.most_common(1)[0][0]
     actions = {
-        "AUTH":           "  -> Action: check ANTHROPIC_API_KEY in vs2/.env (wrong or revoked key)",
+        "AUTH":           "  -> Action: check ANTHROPIC_API_KEY in bem/.env (wrong or revoked key)",
         "PERMISSION":     "  -> Action: key exists but lacks permission — check model access in Anthropic console",
         "BILLING":        "  -> Action: account has no credits — add funds at console.anthropic.com",
         "RATE_LIMIT":     "  -> Action: reduce llm.rate_limit.max_requests_per_minute in run_config.yaml",
@@ -148,7 +148,7 @@ def _make_run_id() -> str:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
-        description="VS2 runner — C1 manifest + C2 ingestion + C3 normalisation (no matching)."
+        description="BEM runner — C1 manifest + C2 ingestion + C3 normalisation (no matching)."
     )
     parser.add_argument(
         "--config",
@@ -160,7 +160,7 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help=(
             "Resume C5 verification from an existing run. "
-            "Provide a prior vs2_run_id (e.g. 20260308_172313_2coxjo). "
+            "Provide a prior bem_run_id (e.g. 20260308_172313_2coxjo). "
             "Pairs already present in that run's llm_decisions_*.jsonl are skipped. "
             "C1-C4 are still executed (idempotent). "
             "New manifests are written under the resumed run directory."
@@ -192,7 +192,7 @@ def main(argv: list[str] | None = None) -> None:
     if _backend_early == "anthropic_api" and not os.environ.get("ANTHROPIC_API_KEY"):
         sys.exit(
             "ERROR: llm.backend is 'anthropic_api' but ANTHROPIC_API_KEY is not set.\n"
-            "Create a file  vs2/.env  containing:\n"
+            "Create a file  bem/.env  containing:\n"
             "  ANTHROPIC_API_KEY=sk-ant-api03-...\n"
             "Then re-run the pipeline."
         )
@@ -216,8 +216,8 @@ def main(argv: list[str] | None = None) -> None:
             )
         print(f"Resuming run: {resume_run_id}")
 
-    vs2_run_id = _make_run_id()
-    run_root = Path("runs") / vs2_run_id
+    bem_run_id = _make_run_id()
+    run_root = Path("runs") / bem_run_id
     manifests_dir = run_root / "manifests"
     # For C5, use the resumed run's logs dir if resuming; otherwise use the new one.
     logs_dir = resume_logs_dir if resume_run_id else run_root / "logs"
@@ -228,7 +228,7 @@ def main(argv: list[str] | None = None) -> None:
     # 5. Write run manifest (C1)
     timestamp_iso = datetime.now().isoformat(timespec="seconds")
     run_manifest = RunManifest(
-        vs2_run_id=vs2_run_id,
+        bem_run_id=bem_run_id,
         timestamp_iso=timestamp_iso,
         timezone=timezone,
         config_path=str(config_path),
@@ -241,7 +241,7 @@ def main(argv: list[str] | None = None) -> None:
     )
     run_manifest_path = write_run_manifest(run_manifest, manifests_dir)
     print("C1 scaffold complete.")
-    print(f"  run_id   : {vs2_run_id}")
+    print(f"  run_id   : {bem_run_id}")
     print(f"  manifest : {run_manifest_path}")
 
     # 6. C2 ingestion
@@ -448,7 +448,7 @@ def main(argv: list[str] | None = None) -> None:
                 task=task,
                 evidence_fn=evidence_fn,
                 config=config,
-                run_id=vs2_run_id,
+                run_id=bem_run_id,
                 logs_dir=logs_dir,
             )
 

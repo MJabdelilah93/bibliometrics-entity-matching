@@ -21,7 +21,7 @@ from typing import Any
 
 import pandas as pd
 
-from vs2.guards.apply_guards import apply_guards
+from bem.guards.apply_guards import apply_guards
 
 
 # ---------------------------------------------------------------------------

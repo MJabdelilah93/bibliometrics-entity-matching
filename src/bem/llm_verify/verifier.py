@@ -501,7 +501,7 @@ def run_verification(
         task: "AND" or "AIN".
         evidence_fn: Callable(anchor_id, candidate_id) -> evidence_card dict.
         config: Full pipeline config dict (top-level from run_config.yaml).
-        run_id: Current vs2_run_id string.
+        run_id: Current bem_run_id string.
         logs_dir: Path to runs/<run_id>/logs/.
 
     Returns:

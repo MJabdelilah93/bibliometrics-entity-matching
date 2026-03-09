@@ -10,7 +10,7 @@ Title / source / year are NEVER included in the AIN output (topical-inference bo
 
 Usage
 -----
-    python -m vs2.benchmark.build_annotation_packets \\
+    python -m bem.benchmark.build_annotation_packets \\
         --in_dir  data/derived \\
         --out_dir data/derived \\
         --only_dev false
@@ -59,8 +59,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from vs2.llm_verify.evidence_cards import build_and_evidence, build_ain_evidence
-from vs2.normalise.normalise import strip_scopus_author_id
+from bem.llm_verify.evidence_cards import build_and_evidence, build_ain_evidence
+from bem.normalise.normalise import strip_scopus_author_id
 
 
 # ---------------------------------------------------------------------------
@@ -383,7 +383,7 @@ def main(argv: list[str] | None = None) -> None:
     ]:
         if not Path(path).exists():
             print(f"ERROR: {label} not found: {path}")
-            print("Run the pipeline first:  python -m vs2 --config configs/run_config.yaml")
+            print("Run the pipeline first:  python -m bem --config configs/run_config.yaml")
             sys.exit(1)
 
     print("Loading supporting parquets …")
@@ -423,7 +423,7 @@ def main(argv: list[str] | None = None) -> None:
     print("  Fill the 'gold_label' column for each row:")
     print("    match / non-match / uncertain   (no LLM assistance)")
     print("  Save in-place, then run:")
-    print("    python -m vs2.benchmark.pack_benchmark_pairs --in_dir data/derived")
+    print("    python -m bem.benchmark.pack_benchmark_pairs --in_dir data/derived")
 
 
 if __name__ == "__main__":

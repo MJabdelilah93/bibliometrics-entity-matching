@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from vs2.guards.apply_guards import load_llm_decisions_jsonl
+from bem.guards.apply_guards import load_llm_decisions_jsonl
 
 
 # ---------------------------------------------------------------------------

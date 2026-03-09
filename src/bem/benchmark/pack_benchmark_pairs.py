@@ -6,13 +6,13 @@ verification reads.
 
 Usage
 -----
-    python -m vs2.benchmark.pack_benchmark_pairs --in_dir data/derived
+    python -m bem.benchmark.pack_benchmark_pairs --in_dir data/derived
 
     # Pack dev2 annotation packets (quota-stratified benchmark):
-    python -m vs2.benchmark.pack_benchmark_pairs --in_dir data/derived --prefix dev2
+    python -m bem.benchmark.pack_benchmark_pairs --in_dir data/derived --prefix dev2
 
     # Force old task-template behaviour:
-    python -m vs2.benchmark.pack_benchmark_pairs --in_dir data/derived --use_packets false
+    python -m bem.benchmark.pack_benchmark_pairs --in_dir data/derived --use_packets false
 
 Input resolution (per task, in priority order)
 ----------------------------------------------
@@ -362,7 +362,7 @@ def main(argv: list[str] | None = None) -> None:
     print("      backend: requests_only")
     print()
     print("  Then run:")
-    print("    python -m vs2 --config configs/run_config.yaml")
+    print("    python -m bem --config configs/run_config.yaml")
 
 
 if __name__ == "__main__":

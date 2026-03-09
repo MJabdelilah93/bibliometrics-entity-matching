@@ -15,7 +15,7 @@ given the same match-edge set.
 
 Usage
 -----
-    from vs2.aggregate.cluster import build_clusters_from_routing, detect_conflicts
+    from bem.aggregate.cluster import build_clusters_from_routing, detect_conflicts
 
     membership_df, stats = build_clusters_from_routing(routing_df, task="AND")
     conflicts_df, summary_df = detect_conflicts(routing_df, membership_df, task="AND")

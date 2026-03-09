@@ -1,8 +1,8 @@
-# VS2 — Entity Matching for Bibliometrics
+# Bibliometrics Entity Matching (BEM)
 
-## What is VS2?
+## What is BEM?
 
-VS2 is a reproducible entity-matching pipeline for bibliometric data exported from the
+BEM is a reproducible entity-matching pipeline for bibliometric data exported from the
 Scopus UI. It resolves two entity types:
 
 - **AND** (Author Name Disambiguation): assigns each (author-name, paper) occurrence
@@ -36,7 +36,7 @@ from primary evidence only.
 
 ## Where to place raw data
 
-Copy Scopus UI CSV exports into `vs2/data/raw/`. **Do not commit them to git** —
+Copy Scopus UI CSV exports into `bem/data/raw/`. **Do not commit them to git** —
 `data/raw/` and all `*.csv` files are git-ignored.
 
 The current batch files are:
@@ -83,7 +83,7 @@ Normalised columns added by C3:
 Each pipeline run writes its manifest and logs under:
 
 ```
-runs/<vs2_run_id>/
+runs/<bem_run_id>/
   manifests/
     run_manifest.json               C1: config + schema hashes
     export_manifest.json            C2: input file hashes, row counts, missingness
@@ -112,13 +112,13 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-The editable install (`-e .`) makes the `vs2` package importable from `src/` without
+The editable install (`-e .`) makes the `bem` package importable from `src/` without
 path manipulation.
 
 ### 2. Run the scaffold
 
 ```bash
-python -m vs2 --config configs/run_config.yaml
+python -m bem --config configs/run_config.yaml
 ```
 
 This writes `runs/<run_id>/manifests/run_manifest.json` and confirms the C1 scaffold
@@ -150,7 +150,7 @@ Overwrite it with your real export, or add a `.json` file alongside it.
 Once the file is in place, run the converter:
 
 ```bash
-python -m vs2.benchmark.convert_labelstudio \
+python -m bem.benchmark.convert_labelstudio \
     --input data/derived/labelstudio_export.csv \
     --format auto \
     --task auto
@@ -198,7 +198,7 @@ Required columns (CSV) or data fields (JSON):
 ### Step 2 — Convert the export
 
 ```bash
-python -m vs2.benchmark.convert_labelstudio \
+python -m bem.benchmark.convert_labelstudio \
     --input path/to/labelstudio_export.csv \
     --format auto \
     --task auto
@@ -229,7 +229,7 @@ Full options:
 ### Step 3 — Run the pipeline
 
 ```bash
-python -m vs2 --config configs/run_config.yaml
+python -m bem --config configs/run_config.yaml
 ```
 
 With `verification.enabled: true`, C5 will load the benchmark parquets and
@@ -258,7 +258,7 @@ benchmark parquets that C5 reads.
 ### Step 1 — Sample pairs
 
 ```bash
-python -m vs2.benchmark.sample_benchmark_tasks --out_dir data/derived --seed 42
+python -m bem.benchmark.sample_benchmark_tasks --out_dir data/derived --seed 42
 ```
 
 Reads the C4 candidate parquets and samples **5 000 pairs per task** (AND + AIN)
@@ -276,7 +276,7 @@ Columns: `task`, `anchor_id`, `candidate_id`, `similarity_score`, `best_pass_id`
 ### Step 2 — Build evidence packets
 
 ```bash
-python -m vs2.benchmark.build_annotation_packets \
+python -m bem.benchmark.build_annotation_packets \
     --in_dir data/derived \
     --out_dir data/derived \
     --only_dev false
@@ -331,7 +331,7 @@ For each row, review the evidence columns and enter one of the following in the
 Then validate and convert to benchmark parquets:
 
 ```bash
-python -m vs2.benchmark.pack_benchmark_pairs --in_dir data/derived
+python -m bem.benchmark.pack_benchmark_pairs --in_dir data/derived
 ```
 
 The packer resolves its input files in this priority order:
@@ -356,7 +356,7 @@ data/derived/benchmark_pairs_ain.parquet
 Run the full pipeline after packing:
 
 ```bash
-python -m vs2 --config configs/run_config.yaml
+python -m bem --config configs/run_config.yaml
 ```
 
 C5 loads the benchmark parquets and writes filled-prompt envelopes + stub decisions
@@ -369,7 +369,7 @@ After building the evidence packets (Step 2 above), you can pre-fill the obvious
 `match` / `non-match` rows before opening the spreadsheet:
 
 ```bash
-python -m vs2.benchmark.autofill_gold_labels \
+python -m bem.benchmark.autofill_gold_labels \
     --and_in  data/derived/annotation_packets_and.csv \
     --ain_in  data/derived/annotation_packets_ain.csv \
     --and_out data/derived/annotation_packets_and.csv \
@@ -411,7 +411,7 @@ The auto-labeller produces `*_code.csv` files with a machine-assigned label in
 against manual labels — **they are not gold-standard annotations**.
 
 ```bash
-python -m vs2.benchmark.auto_label_packets \
+python -m bem.benchmark.auto_label_packets \
     --in_dir  data/derived \
     --out_dir data/derived \
     --config  configs/run_config.yaml
@@ -464,7 +464,7 @@ build the benchmark parquets.
 ### Step 1 — Generate minimal evidence files
 
 ```bash
-python -m vs2.benchmark.make_min_annotation_files \
+python -m bem.benchmark.make_min_annotation_files \
     --in_dir data/derived \
     --prefix dev2
 ```
@@ -482,7 +482,7 @@ Save as CSV (keep original filename, do not change format).
 ### Step 3 — Apply labels and pack parquets
 
 ```bash
-python -m vs2.benchmark.apply_min_labels_to_dev2 \
+python -m bem.benchmark.apply_min_labels_to_dev2 \
     --in_dir data/derived \
     --prefix dev2
 ```
@@ -500,7 +500,7 @@ This script:
 ### Step 4 — Verify
 
 ```bash
-python -m vs2.benchmark.pack_benchmark_pairs \
+python -m bem.benchmark.pack_benchmark_pairs \
     --in_dir data/derived \
     --prefix dev2
 ```

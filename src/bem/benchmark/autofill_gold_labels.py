@@ -6,7 +6,7 @@ All other rows are left untouched.  No LLM is involved at any step.
 
 Usage
 -----
-    python -m vs2.benchmark.autofill_gold_labels \\
+    python -m bem.benchmark.autofill_gold_labels \\
         --and_in  data/derived/annotation_packets_and.csv \\
         --ain_in  data/derived/annotation_packets_ain.csv \\
         --and_out data/derived/annotation_packets_and.csv \\

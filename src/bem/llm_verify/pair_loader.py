@@ -90,7 +90,7 @@ def get_pairs_for_task(
                 f"  [C5/{task}] benchmark file not found: {bench_path or '(not configured)'}. "
                 f"Skipping {task} verification.\n"
                 f"  To create it, export annotations from Label Studio and run:\n"
-                f"    python -m vs2.benchmark.convert_labelstudio \\\n"
+                f"    python -m bem.benchmark.convert_labelstudio \\\n"
                 f"        --input <path/to/labelstudio_export.csv> \\\n"
                 f"        --format auto\n"
                 f"  Then re-run the pipeline."

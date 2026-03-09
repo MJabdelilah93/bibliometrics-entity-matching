@@ -9,7 +9,7 @@ Pipeline stages implemented in this module:
   B) Build deterministic blocking indexes (inverted indexes).
   D) Generate, score, and rank candidate pairs per anchor; keep top-K=50.
 
-Similarity scoring is delegated to vs2.features.similarity.
+Similarity scoring is delegated to bem.features.similarity.
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from vs2.normalise.normalise import extract_acronyms, normalise_text_basic
-from vs2.features.similarity import and_similarity, ain_similarity
+from bem.normalise.normalise import extract_acronyms, normalise_text_basic
+from bem.features.similarity import and_similarity, ain_similarity
 
 # ---------------------------------------------------------------------------
 # Module-level constants (exported for use in manifests)

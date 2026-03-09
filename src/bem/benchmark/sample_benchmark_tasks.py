@@ -19,10 +19,10 @@ Dev-quota mode (--dev_only true):
 Usage
 -----
     # Default mode (backward-compatible):
-    python -m vs2.benchmark.sample_benchmark_tasks --out_dir data/derived --seed 42
+    python -m bem.benchmark.sample_benchmark_tasks --out_dir data/derived --seed 42
 
     # Dev-quota mode:
-    python -m vs2.benchmark.sample_benchmark_tasks \\
+    python -m bem.benchmark.sample_benchmark_tasks \\
         --dev_only true \\
         --dev_size 1000 \\
         --seed 42 \\
@@ -438,7 +438,7 @@ def main(argv: list[str] | None = None) -> None:
     for task, cand_path in paths.items():
         if not cand_path.exists():
             print(f"  [{task}] ERROR: candidate parquet not found: {cand_path}")
-            print(f"  [{task}] Run C4 first:  python -m vs2 --config configs/run_config.yaml")
+            print(f"  [{task}] Run C4 first:  python -m bem --config configs/run_config.yaml")
             sys.exit(1)
 
         print(f"  [{task}] Loading {cand_path} …", end="", flush=True)
@@ -481,7 +481,7 @@ def main(argv: list[str] | None = None) -> None:
     print("Next step:")
     if dev_only:
         print(f"  Build evidence packets:")
-        print(f"    python -m vs2.benchmark.build_annotation_packets \\")
+        print(f"    python -m bem.benchmark.build_annotation_packets \\")
         print(f"        --prefix {prefix.rstrip('_')} \\")
         print(f"        --only_dev true")
         print()
@@ -493,7 +493,7 @@ def main(argv: list[str] | None = None) -> None:
         print("  Open the annotation CSVs, fill the 'gold_label' column")
         print("  (match / non-match / uncertain) for every row — without LLM assistance.")
         print("  Then run:")
-        print("    python -m vs2.benchmark.pack_benchmark_pairs --in_dir data/derived")
+        print("    python -m bem.benchmark.pack_benchmark_pairs --in_dir data/derived")
 
 
 if __name__ == "__main__":
