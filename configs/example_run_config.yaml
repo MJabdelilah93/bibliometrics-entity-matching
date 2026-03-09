@@ -1,0 +1,91 @@
+project:
+  name: "vs2"
+  timezone: "Europe/Amsterdam"
+
+inputs:
+  schema_headers_path: "configs/schema_headers.txt"
+  # Place your Scopus UI CSV exports in data/raw/ and list them here.
+  # Naming convention: scopus_<Q>_<QUERY_LABEL>_batch<NNN>_<YYYYMMDD>.csv
+  q1_csv_paths:
+    - "data/raw/<YOUR_SCOPUS_EXPORT_Q1>.csv"
+  q2_csv_paths:
+    - "data/raw/<YOUR_SCOPUS_EXPORT_Q2>.csv"
+
+candidate_generation:
+  top_k: 50
+  truncation_author_count: 100
+  and_blocking_passes:
+    - pass_id: "and_pass1_author_id"
+      priority: 1
+      description: "Author(s) ID equality (candidate generation only; NOT shown to LLM)"
+    - pass_id: "and_pass2_name_key_year_window"
+      priority: 2
+      description: "Name-key within ±5 years"
+    - pass_id: "and_pass3_refinement"
+      priority: 3
+      description: "Refinement using co-author + affiliation signals where available"
+  ain_blocking_order:
+    - "acronym"
+    - "token_prefix"
+    - "prefix"
+  topk_across_passes_rule:
+    description: "Union candidates across passes; rank by (pass_priority, similarity_score, stable_tiebreaker); keep first K"
+
+ranking:
+  use_embeddings: false
+  similarity_measures:
+    - "lexical_only"
+
+verification:
+  enabled: false          # Set to true once you have benchmark parquets ready
+  scope: "benchmark"      # "benchmark" | "full_candidates"
+  max_pairs_per_task: 5000
+  smoke_test: false
+  smoke_pairs_per_task: 5
+  benchmark_pairs:
+    and_path: "data/derived/benchmark_pairs_and.parquet"
+    ain_path: "data/derived/benchmark_pairs_ain.parquet"
+
+llm:
+  model_id: "claude-sonnet-4-6"
+  temperature: 0
+  top_p: 1
+  max_tokens: 800
+  backend: "requests_only"  # "requests_only" (no API calls) | "anthropic_api" (real calls)
+  # To use anthropic_api: set ANTHROPIC_API_KEY environment variable
+  output_schema_version: "v1"
+  rate_limit:
+    max_requests_per_minute: 60
+  prompt_and_path: "configs/prompts/and_verifier_v1.txt"
+  prompt_ain_path: "configs/prompts/ain_verifier_v1.txt"
+  retry_policy:
+    only_on_format_errors: true
+    max_retries: 2
+
+guards_and_routing:
+  m_independent_signals: 2
+  precision_floor_target: 0.98
+  thresholds_initial:
+    and:
+      t_match: 0.85
+      t_nonmatch: 0.85
+    ain:
+      t_match: 0.85
+      t_nonmatch: 0.85
+  high_impact_routing: false
+
+outputs:
+  prefer_parquet: true
+  llm_trace_format: "jsonl"
+
+auto_labeling:
+  enabled: true
+  and:
+    name_sim_match: 0.98
+    affil_sim_match: 0.95
+    name_sim_nonmatch: 0.60
+  ain:
+    affil_str_sim_match: 0.95
+    token_jaccard_match: 0.55
+    affil_str_sim_nonmatch: 0.45
+  output_suffix: "_code"

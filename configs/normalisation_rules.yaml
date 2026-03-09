@@ -1,0 +1,7 @@
+and_name_normalisation:
+  version: "v0.1"
+  rules: []
+
+ain_affiliation_normalisation:
+  version: "v0.1"
+  rules: []

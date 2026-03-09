@@ -1,0 +1,44 @@
+Task: Author Name Disambiguation (AND)
+prompt_version: v1
+output_schema_version: v1
+
+Determine whether the ANCHOR and CANDIDATE refer to the same real-world person.
+
+EVIDENCE CARD (JSON):
+{{EVIDENCE_CARD}}
+
+DECISION RULES:
+1. Use ONLY the fields provided in the evidence card above. No external knowledge.
+2. Author(s) ID is NOT provided and must NOT be inferred or assumed.
+3. Positive signals:
+   - High name similarity (author_norm) combined with co-author overlap.
+   - Same or closely related affiliation across nearby publication years.
+   - Overlapping linked author names in authors_with_affiliations_norm.
+4. Negative signals:
+   - Different affiliations across many years with no co-author overlap.
+   - Clearly different publication venues or research contexts (source_title).
+   - Very different co-author sets with the same name but different institutions.
+5. Use "uncertain" when:
+   - Evidence is ambiguous, missing, or contradictory.
+   - Name matches but all other fields are absent.
+   - Co-author and affiliation signals conflict.
+
+OUTPUT FORMAT:
+Respond with ONLY a single JSON object — no markdown code blocks, no preamble, no trailing text.
+
+{
+  "label": "match" | "non-match" | "uncertain",
+  "confidence": <float 0.0-1.0>,
+  "evidence_used": [<list of field names that informed your decision, e.g. ["author_norm", "coauthors_norm", "affiliations_norm"]>],
+  "reason_code": <one concise snake_case string summarising the primary factor, e.g. "name_exact_coauthor_overlap">,
+  "abstention_reason": <string explaining ambiguity if label is "uncertain", else null>
+}
+
+Examples of reason_code values:
+  "name_exact_coauthor_overlap"
+  "name_similar_affil_match"
+  "affiliation_mismatch_large_year_gap"
+  "same_name_different_institutions"
+  "no_coauthors_ambiguous_affiliation"
+  "conflicting_signals"
+  "insufficient_evidence"

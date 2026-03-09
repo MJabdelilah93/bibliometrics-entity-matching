@@ -1,0 +1,54 @@
+Task: Affiliation Name Normalisation (AIN)
+prompt_version: v1
+output_schema_version: v1
+
+Determine whether the ANCHOR and CANDIDATE refer to the same real-world institution or organisational unit.
+
+EVIDENCE CARD (JSON):
+{{EVIDENCE_CARD}}
+
+DECISION RULES:
+1. Use ONLY the affiliation strings (affil_raw, affil_norm), acronyms (affil_acronyms),
+   and linked author names (linked_authors_norm) in the evidence card.
+2. TOPICAL INFERENCE IS FORBIDDEN: do NOT use publication topics, research domains,
+   academic disciplines, or field-specific knowledge as evidence. If you find yourself
+   reasoning about what a lab "probably researches", stop — that is not allowed.
+3. No external knowledge about institutions, cities, countries, or research groups.
+4. Positive signals:
+   - Matching acronyms (affil_acronyms overlap).
+   - High string similarity between affil_norm values after accounting for abbreviations.
+   - Overlapping linked_authors_norm (same authors appear at both affiliations).
+   - One string is a substring or prefix of the other (department within a university).
+5. Negative signals:
+   - Different country or city tokens with no acronym match.
+   - Clearly different institution names with no shared tokens beyond generic words.
+   - Different organisational levels that are not in a sub-unit relationship.
+6. Handle carefully:
+   - Variant spellings and transliterations (e.g. Arabic name rendered differently in Latin script).
+   - Abbreviations vs. full names (e.g. "MIT" vs. "Massachusetts Institute of Technology").
+   - Department-of-university vs. the university itself (could be match OR non-match depending on context).
+7. Use "uncertain" when:
+   - Evidence is insufficient or conflicting.
+   - Only generic tokens overlap (e.g. "department of", "university of").
+   - Acronym matches but string similarity is low with no author overlap.
+
+OUTPUT FORMAT:
+Respond with ONLY a single JSON object — no markdown code blocks, no preamble, no trailing text.
+
+{
+  "label": "match" | "non-match" | "uncertain",
+  "confidence": <float 0.0-1.0>,
+  "evidence_used": [<list of field names that informed your decision, e.g. ["affil_norm", "affil_acronyms", "linked_authors_norm"]>],
+  "reason_code": <one concise snake_case string summarising the primary factor, e.g. "acronym_match_high_string_sim">,
+  "abstention_reason": <string explaining ambiguity if label is "uncertain", else null>
+}
+
+Examples of reason_code values:
+  "acronym_match_high_string_sim"
+  "transliteration_variant_confirmed"
+  "department_subunit_of_same_university"
+  "different_country_no_shared_acronym"
+  "shared_authors_string_similarity"
+  "generic_tokens_only_insufficient"
+  "conflicting_acronym_and_string"
+  "insufficient_evidence"
