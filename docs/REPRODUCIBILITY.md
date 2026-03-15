@@ -128,6 +128,11 @@ python -m bem.benchmark.sample_benchmark_tasks --out_dir data/derived --seed 42
 Writes `data/derived/annotation_tasks_and.csv` and `_ain.csv` with 5 000
 pairs per task across five similarity-quintile bands.
 
+> **Implemented study state:** The study reported in the paper annotated
+> **1 000 pairs per task** (800 development + 200 held-out test), not the full
+> 5 000 generated here.  The sampler supports larger annotation campaigns; the
+> paper's benchmark reflects the annotated subset of this pool.
+
 ### Step 3 — Build evidence packets
 
 ```bash

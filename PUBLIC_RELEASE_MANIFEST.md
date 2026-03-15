@@ -49,6 +49,9 @@ The internal development namespace `vs2` is not present in this release.
 | E7 | `bem.eval.robustness`, `bem.eval.efficiency` | Robustness slices and efficiency accounting |
 | E8 | `bem.eval.export` | Final manuscript export and smoke checks |
 
-## Release date
+## Release history
 
-2026-03-10
+| Date | Event |
+|---|---|
+| 2026-03-10 | Initial public release |
+| 2026-03-15 | Documentation update: corrected benchmark split wording in `DATA_AVAILABILITY.md` (benchmark is 1 000 pairs per task — 800 development + 200 held-out test — not 1 000 dev-only); added clarifying notes in `README.md` and `docs/REPRODUCIBILITY.md` to distinguish the sampler's design capacity from the implemented study state reported in the paper; no source code changes |

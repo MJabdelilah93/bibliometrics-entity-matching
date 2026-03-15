@@ -14,15 +14,20 @@ following the naming convention documented in `README.md`.
 
 ## Gold-standard benchmark
 
-The human-annotated benchmark (1 000 pairs per task, dev split) was created
-by the authors without LLM assistance.  The benchmark parquets are not
-redistributed in this repository because they contain bibliometric identifiers
-(author instance IDs, affiliation instance IDs) that are derived from the
-Scopus exports.
+The human-annotated benchmark used in the paper comprises **1 000 pairs per
+task** (AND and AIN), split into **800 development pairs** and **200 held-out
+test pairs** per task.  All labels were assigned by the authors from primary
+Scopus evidence without LLM assistance at any step.
 
-The annotation methodology — sampling strategy, evidence packet construction,
-label codes, and quality-control procedures — is fully described in the paper
-and in `README.md`.
+The benchmark parquets are not redistributed in this repository because they
+contain bibliometric identifiers (author instance IDs, affiliation instance
+IDs) that are derived from the Scopus exports.
+
+The annotation methodology — sampling strategy, split assignment, evidence
+packet construction, label codes, and quality-control procedures — is fully
+described in the paper and in `README.md`.  The public repository documents
+the complete benchmark-generation procedure so that researchers with access to
+the same Scopus data can reproduce the benchmark from scratch.
 
 ## Code
 
