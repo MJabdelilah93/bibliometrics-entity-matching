@@ -1,6 +1,7 @@
 # Data — never commit Scopus exports or pipeline outputs
 data/
 runs/
+outputs/
 *.csv
 *.parquet
 *.jsonl

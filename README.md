@@ -273,6 +273,11 @@ Columns: `task`, `anchor_id`, `candidate_id`, `similarity_score`, `best_pass_id`
 `split` (`dev` = first 1 000 rows / `test` = remaining 4 000), `gold_label` (blank),
 `notes` (blank).  Re-running with the same `--seed` produces identical output.
 
+> **Implemented study state:** The study reported in the paper annotated
+> **1 000 pairs per task** (800 development + 200 held-out test), not the full
+> 5 000 generated here.  The sampler supports larger annotation campaigns; the
+> paper's benchmark reflects the annotated subset of this pool.
+
 ### Step 2 — Build evidence packets
 
 ```bash
