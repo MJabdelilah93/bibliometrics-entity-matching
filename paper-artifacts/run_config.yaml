@@ -1,0 +1,88 @@
+project:
+  name: "vs2"
+  timezone: "Europe/Amsterdam"
+
+inputs:
+  schema_headers_path: "configs/schema_headers.txt"
+  q1_csv_paths:
+    - "data/raw/scopus_Q1_CORE_MOROCCO_2020_2021_batch001_20260227.csv"
+  q2_csv_paths:
+    - "data/raw/scopus_Q2_STRESS_MAGHREB_AI_2018_2025_batch001_20260227.csv"
+
+candidate_generation:
+  top_k: 50
+  truncation_author_count: 100
+  and_blocking_passes:
+    - pass_id: "and_pass1_author_id"
+      priority: 1
+      description: "Author(s) ID equality (candidate generation only; NOT shown to LLM)"
+    - pass_id: "and_pass2_name_key_year_window"
+      priority: 2
+      description: "Name-key within ±5 years"
+    - pass_id: "and_pass3_refinement"
+      priority: 3
+      description: "Refinement using co-author + affiliation signals where available"
+  ain_blocking_order:
+    - "acronym"
+    - "token_prefix"
+    - "prefix"
+  topk_across_passes_rule:
+    description: "Union candidates across passes; rank by (pass_priority, similarity_score, stable_tiebreaker); keep first K"
+
+ranking:
+  use_embeddings: false
+  similarity_measures:
+    - "lexical_only"
+
+verification:
+  enabled: true
+  scope: "benchmark" # "benchmark" | "full_candidates"
+  max_pairs_per_task: 5000 # safety cap (used only when scope=full_candidates)
+  smoke_test: false # true = send only first N pairs per task; set false for full run
+  smoke_pairs_per_task: 5 # pairs sent per task when smoke_test is true
+  benchmark_pairs:
+    and_path: "data/derived/dev2_benchmark_pairs_and.parquet"
+    ain_path: "data/derived/dev2_benchmark_pairs_ain.parquet"
+
+llm:
+  model_id: "claude-sonnet-4-6"
+  temperature: 0 # deterministic output; top_p is intentionally NOT sent (API rejects both)
+  top_p: 1 # kept for reference only; not passed to the API when temperature is set
+  max_tokens: 800
+  backend: "anthropic_api" # "requests_only" | "anthropic_api"
+  output_schema_version: "v1"
+  rate_limit:
+    max_requests_per_minute: 60
+  prompt_and_path: "configs/prompts/and_verifier_v1.txt"
+  prompt_ain_path: "configs/prompts/ain_verifier_v1.txt"
+  retry_policy:
+    only_on_format_errors: true
+    max_retries: 2
+
+guards_and_routing:
+  m_independent_signals: 2
+  precision_floor_target: 0.98
+  thresholds_initial:
+    and:
+      t_match: 0.85
+      t_nonmatch: 0.85
+    ain:
+      t_match: 0.85
+      t_nonmatch: 0.85
+  high_impact_routing: false
+
+outputs:
+  prefer_parquet: true
+  llm_trace_format: "jsonl"
+
+auto_labeling:
+  enabled: true
+  and:
+    name_sim_match: 0.98
+    affil_sim_match: 0.95
+    name_sim_nonmatch: 0.60
+  ain:
+    affil_str_sim_match: 0.95
+    token_jaccard_match: 0.55
+    affil_str_sim_nonmatch: 0.45
+  output_suffix: "_code"

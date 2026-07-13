@@ -1,0 +1,74 @@
+{
+  "_note": "Block keys in top20_block_sizes are redacted in this public copy because they embed Scopus Author IDs and affiliation string fragments; sizes are preserved. All other fields are verbatim from the run manifest (run 20260309_125700_dwqx6m).",
+  "parameters": {
+    "top_k": 50,
+    "truncation_author_count": 100,
+    "year_window": 5,
+    "token_prefix_len": 3,
+    "prefix_chars": 12,
+    "max_block_size_ain": 50
+  },
+  "and_pass_definitions": [
+    {
+      "pass_id": "pass1_author_id",
+      "priority": 1,
+      "description": "Author(s) ID equality — candidate generation only; the raw ID is never shown to the LLM verifier"
+    },
+    {
+      "pass_id": "pass2_name_key",
+      "priority": 2,
+      "description": "name_key match within ±5 years"
+    },
+    {
+      "pass_id": "pass3_name_key_affil",
+      "priority": 3,
+      "description": "name_key + record-level affiliation prefix refinement"
+    }
+  ],
+  "ain_pass_definitions": [
+    {
+      "pass_id": "ain_acro",
+      "priority": 1,
+      "description": "Acronym blocking"
+    },
+    {
+      "pass_id": "ain_tok3",
+      "priority": 2,
+      "description": "Token-prefix blocking (first 3 tokens)"
+    },
+    {
+      "pass_id": "ain_pre12",
+      "priority": 3,
+      "description": "String-prefix blocking (first 12 chars)"
+    }
+  ],
+  "counts": {
+    "and_total_instances": 183408,
+    "and_eligible_anchors": 153408,
+    "and_truncation_excluded": 30000,
+    "and_candidate_rows": 949584,
+    "ain_total_instances": 173539,
+    "ain_anchors": 173539,
+    "ain_candidate_rows": 6882645
+  },
+  "top20_block_sizes": {
+    "pass1": [138, 125, 90, 88, 84, 84, 83, 81, 79, 77, 76, 73, 72, 72, 71, 68, 66, 64, 63, 62],
+    "pass2": [138, 125, 90, 88, 84, 84, 83, 81, 79, 77, 76, 73, 72, 72, 71, 68, 66, 64, 63, 62],
+    "pass3": [56, 40, 39, 34, 34, 34, 33, 33, 30, 30, 29, 29, 28, 28, 28, 28, 27, 27, 27, 26],
+    "ain_acro": [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50],
+    "ain_tok3": [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50],
+    "ain_pre12": [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+  },
+  "output_file_hashes": {
+    "author_instances": "adc4f62ce22d3520e4f4a86235721dbc907bfc12e43e34532ed33c074399bd26",
+    "affil_instances": "c3534c30379ca762d42309db70f0556ebfa410c5d4e8fb903acddcde37713b5e",
+    "candidates_and": "d31a074d1a4a683e378bc9217350109af0d34ecf09d5a51bd524a605608f6289",
+    "candidates_ain": "35b86b9dd870f5155d85b92ac78414913e4f56882f11b593e1c4f58388b65268"
+  },
+  "output_paths": {
+    "author_instances": "data/interim/author_instances.parquet",
+    "affil_instances": "data/interim/affil_instances.parquet",
+    "candidates_and": "data/interim/candidates_and.parquet",
+    "candidates_ain": "data/interim/candidates_ain.parquet"
+  }
+}

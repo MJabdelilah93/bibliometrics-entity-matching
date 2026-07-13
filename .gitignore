@@ -6,6 +6,10 @@ outputs/
 *.parquet
 *.jsonl
 
+# Exception: paper artifacts (frozen configs, baseline scripts, benchmark
+# tables, run manifests) supporting the manuscript are tracked in full.
+!paper-artifacts/**
+
 # Secrets
 .env
 *.env

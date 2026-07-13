@@ -13,6 +13,8 @@ Scopus UI. It resolves two entity types:
 The pipeline is fully audit-ready: every decision is traceable to a run manifest, a
 config hash, and explicit evidence records.
 
+Frozen configurations, baseline scripts, benchmark tables, and run manifests supporting the associated manuscript are in [paper-artifacts/](paper-artifacts/).
+
 ---
 
 ## Evidence boundary & gold-annotation independence

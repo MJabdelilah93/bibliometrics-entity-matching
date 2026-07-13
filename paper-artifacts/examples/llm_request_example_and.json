@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic illustration of a verification request envelope. Structure and parameters are identical to the real run logs (runs/<run_id>/logs/llm_requests_and.jsonl); all record content is invented to respect Scopus licensing.",
+  "run_id": "YYYYMMDD_HHMMSS_xxxxxx",
+  "task": "AND",
+  "anchor_id": "sha256-of-anchor-instance",
+  "candidate_id": "sha256-of-candidate-instance",
+  "model_id": "claude-sonnet-4-6",
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "max_tokens": 800,
+  "prompt_version": "v1",
+  "filled_prompt": "Task: Author Name Disambiguation (AND)\nprompt_version: v1\noutput_schema_version: v1\n\nDetermine whether the ANCHOR and CANDIDATE refer to the same real-world person.\n\nEVIDENCE CARD (JSON):\n{\n  \"task\": \"AND\",\n  \"anchor\": {\n    \"author_norm\": \"example, author a.\",\n    \"author_pos\": 2,\n    \"record\": {\n      \"eid\": \"2-s2.0-0000000001\",\n      \"year\": 2020,\n      \"source_title\": \"Example Journal of Studies\",\n      \"title\": \"An example article title\"\n    },\n    \"coauthors_norm\": [\"coauthor, one\", \"coauthor, two\"],\n    \"affiliations_norm\": \"example laboratory, example university, city, country\",\n    \"authors_with_affiliations_norm\": \"coauthor, one, example laboratory, example university, city, country; example, author a., example laboratory, example university, city, country\"\n  },\n  \"candidate\": {\n    \"author_norm\": \"example, author a.\",\n    \"author_pos\": 5,\n    \"record\": {\n      \"eid\": \"2-s2.0-0000000002\",\n      \"year\": 2021,\n      \"source_title\": \"Another Example Journal\",\n      \"title\": \"A different example article title\"\n    },\n    \"coauthors_norm\": [\"coauthor, three\", \"coauthor, four\"],\n    \"affiliations_norm\": \"another department, another university, city, country\",\n    \"authors_with_affiliations_norm\": \"coauthor, three, another department, another university, city, country; example, author a., another department, another university, city, country\"\n  }\n}\n\nDECISION RULES:\n1. Use ONLY the fields provided in the evidence card above. No external knowledge.\n2. Author(s) ID is NOT provided and must NOT be inferred or assumed.\n3. Positive signals:\n   - High name similarity (author_norm) combined with co-author overlap.\n   - Same or closely related affiliation across nearby publication years.\n   - Overlapping linked author names in authors_with_affiliations_norm.\n4. Negative signals:\n   - Different affiliations across many years with no co-author overlap.\n   - Clearly different publication venues or research contexts (source_title).\n   - Very different co-author sets with the same name but different institutions.\n5. Use \"uncertain\" when:\n   - Evidence is ambiguous, missing, or contradictory.\n   - Name matches but all other fields are absent.\n   - Co-author and affiliation signals conflict.\n\nOUTPUT FORMAT:\nRespond with ONLY a single JSON object — no markdown code blocks, no preamble, no trailing text.\n\n{\n  \"label\": \"match\" | \"non-match\" | \"uncertain\",\n  \"confidence\": <float 0.0-1.0>,\n  \"evidence_used\": [<list of field names>],\n  \"reason_code\": <snake_case string>,\n  \"abstention_reason\": <string or null>\n}\n",
+  "evidence_json_chars": 1500,
+  "prompt_chars": 3000,
+  "timestamp": "2026-03-08T00:00:00+00:00"
+}

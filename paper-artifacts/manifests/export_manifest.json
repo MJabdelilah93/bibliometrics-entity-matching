@@ -1,0 +1,149 @@
+{
+  "schema_headers_hash": "d480d911b13c675d49bfe1e44b8d7b9dcde430c243bef859bdf9302aaf7db950",
+  "input_files": {
+    "Q1": [
+      {
+        "path": "data/raw/scopus_Q1_CORE_MOROCCO_2020_2021_batch001_20260227.csv",
+        "size_bytes": 65669757,
+        "sha256": "c0fc6857800433b70e4025bbe80d94fd71ab5d55b0092ae0382dbc5ff0827886"
+      }
+    ],
+    "Q2": [
+      {
+        "path": "data/raw/scopus_Q2_STRESS_MAGHREB_AI_2018_2025_batch001_20260227.csv",
+        "size_bytes": 56023529,
+        "sha256": "cb5a0177781c5569d56a10452a61702ca7467e488c7648bfce8b6199e4f2b49d"
+      }
+    ]
+  },
+  "row_counts": {
+    "Q1": {
+      "total": 15952,
+      "per_file": {
+        "scopus_Q1_CORE_MOROCCO_2020_2021_batch001_20260227.csv": 15952
+      }
+    },
+    "Q2": {
+      "total": 14852,
+      "per_file": {
+        "scopus_Q2_STRESS_MAGHREB_AI_2018_2025_batch001_20260227.csv": 14852
+      }
+    }
+  },
+  "missingness": {
+    "Q1": {
+      "Authors": 0,
+      "Author full names": 0,
+      "Author(s) ID": 0,
+      "Title": 0,
+      "Year": 0,
+      "Source title": 1,
+      "Volume": 64,
+      "Issue": 4811,
+      "Art. No.": 9210,
+      "Page start": 6353,
+      "Page end": 6439,
+      "Cited by": 0,
+      "DOI": 973,
+      "Link": 0,
+      "Affiliations": 11,
+      "Authors with affiliations": 0,
+      "Abstract": 0,
+      "Author Keywords": 1847,
+      "Index Keywords": 6499,
+      "Correspondence Address": 2002,
+      "Editors": 15952,
+      "Publisher": 9,
+      "ISSN": 3007,
+      "ISBN": 15592,
+      "CODEN": 11305,
+      "PubMed ID": 13552,
+      "Language of Original Document": 0,
+      "Abbreviated Source Title": 1,
+      "Document Type": 0,
+      "Publication Stage": 0,
+      "Open Access": 7846,
+      "Source": 0,
+      "EID": 0,
+      "query_frame": 0,
+      "source_file": 0,
+      "row_id_in_file": 0
+    },
+    "Q2": {
+      "Authors": 4,
+      "Author full names": 4,
+      "Author(s) ID": 4,
+      "Title": 0,
+      "Year": 0,
+      "Source title": 4,
+      "Volume": 291,
+      "Issue": 3712,
+      "Art. No.": 9007,
+      "Page start": 5971,
+      "Page end": 5979,
+      "Cited by": 0,
+      "DOI": 493,
+      "Link": 0,
+      "Affiliations": 5,
+      "Authors with affiliations": 4,
+      "Abstract": 0,
+      "Author Keywords": 559,
+      "Index Keywords": 5348,
+      "Correspondence Address": 1881,
+      "Editors": 14847,
+      "Publisher": 15,
+      "ISSN": 3700,
+      "ISBN": 14392,
+      "CODEN": 11508,
+      "PubMed ID": 13777,
+      "Language of Original Document": 0,
+      "Abbreviated Source Title": 0,
+      "Document Type": 0,
+      "Publication Stage": 0,
+      "Open Access": 6714,
+      "Source": 0,
+      "EID": 0,
+      "query_frame": 0,
+      "source_file": 0,
+      "row_id_in_file": 0
+    },
+    "combined": {
+      "Authors": 4,
+      "Author full names": 4,
+      "Author(s) ID": 4,
+      "Title": 0,
+      "Year": 0,
+      "Source title": 5,
+      "Volume": 355,
+      "Issue": 8523,
+      "Art. No.": 18217,
+      "Page start": 12324,
+      "Page end": 12418,
+      "Cited by": 0,
+      "DOI": 1466,
+      "Link": 0,
+      "Affiliations": 16,
+      "Authors with affiliations": 4,
+      "Abstract": 0,
+      "Author Keywords": 2406,
+      "Index Keywords": 11847,
+      "Correspondence Address": 3883,
+      "Editors": 30799,
+      "Publisher": 24,
+      "ISSN": 6707,
+      "ISBN": 29984,
+      "CODEN": 22813,
+      "PubMed ID": 27329,
+      "Language of Original Document": 0,
+      "Abbreviated Source Title": 1,
+      "Document Type": 0,
+      "Publication Stage": 0,
+      "Open Access": 14560,
+      "Source": 0,
+      "EID": 0,
+      "query_frame": 0,
+      "source_file": 0,
+      "row_id_in_file": 0
+    }
+  }
+}

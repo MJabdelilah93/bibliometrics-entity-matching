@@ -1,0 +1,375 @@
+# =============================================================================
+# eval_config.yaml — VS2 Evaluation Pipeline Configuration
+# =============================================================================
+#
+# Run:
+#   python -m vs2.eval --config configs/eval_config.yaml            # dry-run
+#   python -m vs2.eval --config configs/eval_config.yaml --no-dry-run
+#
+# All paths are relative to the project root (the folder containing configs/).
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# BENCHMARK INPUTS
+# -----------------------------------------------------------------------------
+# IMPORTANT: these MUST point to the dev2 benchmark files (the authoritative
+# iteration).  If you change them to non-dev2 files, you MUST also set
+# allow_non_dev2: true — this produces a loud warning so you know you are
+# deviating from the standard evaluation set.
+#
+# Legacy files (benchmark_pairs_{and,ain}.parquet) are superseded and must NOT
+# be used for reported evaluation without explicit justification.
+# -----------------------------------------------------------------------------
+benchmark:
+  and:  data/derived/dev2_benchmark_pairs_and.parquet
+  ain:  data/derived/dev2_benchmark_pairs_ain.parquet
+
+  # Set to true ONLY when intentionally using non-dev2 benchmark files.
+  # A warning will still be printed.  Never set silently.
+  allow_non_dev2: false
+
+
+# -----------------------------------------------------------------------------
+# VS2 ROUTING INPUTS
+# -----------------------------------------------------------------------------
+# Point to the run that produced benchmark-filtered routing logs (_bm files).
+# The _bm logs are currently in run 20260308_235149_s9nqge.
+# Update vs2_run_dir and the log paths if you re-run the full pipeline.
+# -----------------------------------------------------------------------------
+routing:
+  vs2_run_dir:  runs/20260308_235149_s9nqge
+
+  # Benchmark-filtered routing log for AND (produced by C6 guard stage)
+  and_bm_log:   runs/20260308_235149_s9nqge/logs/routing_log_and_bm.parquet
+
+  # Benchmark-filtered routing log for AIN
+  ain_bm_log:   runs/20260308_235149_s9nqge/logs/routing_log_ain_bm.parquet
+
+
+# -----------------------------------------------------------------------------
+# THRESHOLD MANIFEST
+# -----------------------------------------------------------------------------
+# The threshold manifest from the C6 tuning run.
+# Use the most recent run that has thresholds_tuned_dev.json.
+# Current authoritative run: 20260309_125700_dwqx6m
+# -----------------------------------------------------------------------------
+thresholds:
+  manifest: runs/20260309_125700_dwqx6m/manifests/thresholds_tuned_dev.json
+
+
+# -----------------------------------------------------------------------------
+# OUTPUT DIRECTORY
+# -----------------------------------------------------------------------------
+# All evaluation products (predictions, metrics, figures) are written here.
+# Each execution creates a timestamped sub-directory:
+#   outputs/eval/<YYYYMMDD_HHMMSS_eval>/
+# Run logs remain under runs/; this area is for evaluation products only.
+# -----------------------------------------------------------------------------
+output:
+  dir: outputs/eval
+
+
+# -----------------------------------------------------------------------------
+# EVAL INPUTS (materialised split-specific prediction files)
+# -----------------------------------------------------------------------------
+# Stage e1_materialise_inputs writes stand-alone split-specific parquets here.
+# These are stable, versioned inputs that downstream metric scripts consume
+# directly, without re-joining on every run.
+#
+# Outputs:
+#   outputs/eval_inputs/
+#     predictions_and_dev.parquet        AND dev predictions + gold labels
+#     predictions_and_test.parquet       AND test predictions (absent if no test split)
+#     predictions_ain_dev.parquet        AIN dev predictions + gold labels
+#     predictions_ain_test.parquet       AIN test predictions (absent if no test split)
+#     aux_scopus_id_comparator_and.parquet   auxiliary AND Scopus-ID pass comparator
+#     eval_inputs_manifest.json          full provenance record
+#
+# candidate_pairs is needed only for the auxiliary Scopus-ID comparator derivation.
+# -----------------------------------------------------------------------------
+eval_inputs:
+  output_dir: outputs/eval_inputs
+
+  # Candidate-pair tables (needed for auxiliary Scopus-ID comparator)
+  candidates_and: data/interim/candidates_and.parquet
+
+  # Set to false to skip producing the auxiliary Scopus-ID comparator output.
+  produce_scopus_id_comparator: true
+
+
+# -----------------------------------------------------------------------------
+# CLASSICAL BASELINES
+# -----------------------------------------------------------------------------
+# Stage E3 computes classical baselines for fair comparison with VS2.
+#
+# Fairness constraints enforced by code:
+#   AND: Author(s) ID is NEVER used in any fair baseline (only in aux_scopus_id).
+#   AIN: title / year / source are NEVER used.
+#
+# Output files land in baselines.output_dir:
+#   scores_<task>_<split>_<baseline>.parquet   per-baseline per-task per-split
+#   baseline_scores_master.parquet             all baselines stacked (long format)
+#   baselines_manifest.json                    provenance + smoke-check results
+# -----------------------------------------------------------------------------
+baselines:
+  output_dir: outputs/baselines
+
+  # Which baselines to run (set to false to skip individually)
+  run:
+    deterministic: true   # A: exact name match + shared affil prefix
+    fuzzy: true           # B: weighted lexical similarity (rapidfuzz)
+    tfidf: true           # C: TF-IDF cosine (requires scikit-learn)
+    embedding: true       # D: sentence-embedding cosine (requires sentence-transformers)
+                          #    Set to true; you will be prompted for confirmation.
+
+  # TF-IDF settings (baseline C)
+  tfidf:
+    max_features: 20000
+    ngram_range: [1, 2]     # [min_n, max_n] — unigrams + bigrams
+    sublinear_tf: true
+    # 'all_instances' = fit on full corpus (author_instances / affil_instances)
+    # 'eval_pairs_only' = fit on eval pairs only (small but controlled)
+    fit_corpus: all_instances
+
+  # Embedding settings (baseline D)
+  embedding:
+    model: sentence-transformers/all-MiniLM-L6-v2
+    batch_size: 64
+    device: cpu
+    # When true: print info about the embedding job and ask y/N before running.
+    # In non-interactive (non-TTY) environments, embedding is SKIPPED if this is true.
+    # Set to false (or use --no-embed-confirm CLI flag) to bypass the prompt.
+    require_confirmation: true
+
+  # Auxiliary Scopus-ID comparator (clearly labelled AUXILIARY; not a fair baseline)
+  # Source is already materialised by stage E1 (materialise_inputs).
+  aux_scopus_id:
+    include_in_master: true
+    source: outputs/eval_inputs/aux_scopus_id_comparator_and.parquet
+
+
+# -----------------------------------------------------------------------------
+# THRESHOLD TUNING  (Stage E4)
+# -----------------------------------------------------------------------------
+# Tunes operating thresholds for each (task × baseline) pair on the DEV split.
+# Test data is never seen here — no leakage of any kind.
+#
+# Three methods per (task × baseline):
+#   precision_floor_match  [PRIMARY]   lowest threshold achieving precision >= floor
+#   f1_optimal             [secondary] threshold that maximises F-beta
+#   two_threshold          [routing]   (t_low, t_high) band; uncertain pairs abstained
+#
+# Output files (outputs/thresholds/):
+#   diagnostics_<task>_<baseline>.parquet   full precision/recall curve (101 rows)
+#   threshold_summary_<task>.csv            human-readable selected thresholds
+#   thresholds_<task>.json                  machine-readable artefact consumed by E5+
+#   tuning_manifest.json                    provenance record
+# -----------------------------------------------------------------------------
+tuning:
+  output_dir: outputs/thresholds
+
+  # Task-specific precision floors for the MATCH class (primary operating point).
+  # Raise the floor to be more conservative; lower it to improve recall.
+  precision_floor:
+    and: 0.90
+    ain: 0.90
+
+  # Precision floor for the NON-MATCH class (used only in two_threshold tuning).
+  # Controls how confidently we auto-reject a pair without human review.
+  precision_floor_nonmatch:
+    and: 0.90
+    ain: 0.90
+
+  # Beta for F-beta score (f1_beta: 1.0 = standard F1).
+  f1_beta: 1.0
+
+  # Threshold grid: evaluates every step from start to stop inclusive.
+  # 101 grid points at step=0.01; finer grids slow tuning but change results <0.001.
+  threshold_grid:
+    start: 0.00
+    stop:  1.00
+    step:  0.01
+
+  # Two-threshold uncertain-band tuning.
+  # Pairs with t_low <= score < t_high are abstained; remainder get a definite label.
+  two_threshold:
+    enabled: true
+
+
+# -----------------------------------------------------------------------------
+# EVALUATION  (Stage E5)
+# -----------------------------------------------------------------------------
+# Applies tuned thresholds, computes metrics for VS2 + all baselines, and
+# produces manuscript-ready tables and figures.
+#
+# Evaluation policy (locked):
+#   PRIMARY metric  : match precision at precision_floor_match threshold
+#   SECONDARY metric: F1 at f1_optimal threshold
+#   Gold uncertain  : EXCLUDED from precision/recall/F1 denominators
+#   Predicted uncertain: treated as "no prediction"; counted toward uncertain_rate
+#   Coverage        : auto-decided pairs / all evaluated pairs
+#   CI              : bootstrap 95 % (1 000 resamples, fixed seed)
+#
+# Output locations:
+#   outputs/evaluation/  — machine-readable metrics (JSON + parquet + manifest)
+#   outputs/manuscript/  — CSV / Markdown / LaTeX tables + PNG figures
+# -----------------------------------------------------------------------------
+evaluation:
+  output_dir:    outputs/evaluation
+  manuscript_dir: outputs/manuscript
+
+  # Which threshold methods to include in the main comparison table.
+  # precision_floor_match is always included (primary operating point).
+  # f1_optimal is secondary / sensitivity check.
+  # two_threshold adds an abstention-aware row (optional; can be verbose).
+  methods:
+    - precision_floor_match
+    - f1_optimal
+
+  # Set to false to omit VS2 system rows from the table.
+  include_vs2: true
+
+  # Set to false to exclude the auxiliary Scopus-ID comparator (AND only).
+  # The comparator is always shown in a separate panel; this controls its presence.
+  include_aux_scopus_id: true
+
+  # Bootstrap confidence intervals
+  bootstrap:
+    n_samples: 1000     # increase to 10 000 for publication; 1 000 is fast for dev
+    alpha: 0.05         # 95 % CI
+
+  # Figure settings
+  figure:
+    dpi: 300
+    format: png         # png | pdf | svg
+
+
+
+# -----------------------------------------------------------------------------
+# ABLATIONS  (Stage E6)
+# -----------------------------------------------------------------------------
+# Six locked ablations for VS2 only.  Offline ablations run immediately;
+# API-based ablations require enabled: true and an ANTHROPIC_API_KEY.
+#
+# Selectable per-ablation via the run: flags below.
+# Output: outputs/ablations/
+# -----------------------------------------------------------------------------
+ablations:
+  output_dir: outputs/ablations
+
+  # Which ablations to run (set individual flags to true/false)
+  run:
+    a1_single_prompt:      false   # Expensive: API calls + confirmation
+    a2_no_guards:          true    # Offline: re-route with C5 label only
+    a3_k_sensitivity:      true    # Offline: blocking recall at K = 10/25/50
+    a4_missing_fields_and: false   # Expensive: API calls + confirmation
+    a5_missing_fields_ain: false   # Expensive: API calls + confirmation
+    a6_threshold_sweep:    true    # Offline: sweep (t_match x m_signals)
+
+  # A1: full DAG VS2 vs single-prompt LLM (no blocking structure)
+  a1_single_prompt:
+    model: claude-opus-4-6
+    max_pairs_per_task: 200
+    require_confirmation: true
+
+  # A3: K sensitivity - blocking window sizes to evaluate
+  a3_k_sensitivity:
+    k_values: [10, 25, 50]
+
+  # A4: AND missing-field ablations (requires API calls)
+  a4_missing_fields_and:
+    remove_coauthor:       true
+    remove_affiliation:    true
+    max_pairs: 300
+    require_confirmation:  true
+
+  # A5: AIN missing-field ablations (requires API calls)
+  a5_missing_fields_ain:
+    raw_affil_only:        true
+    remove_author_link:    true
+    max_pairs: 300
+    require_confirmation:  true
+
+  # A6: threshold-sweep analysis
+  a6_threshold_sweep:
+    t_match_values:    [0.50, 0.60, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+    m_signals_values:  [0, 1, 2, 3]
+    t_nonmatch_fixed:  0.85
+
+# -----------------------------------------------------------------------------
+# ROBUSTNESS & EFFICIENCY  (Stage E7)
+# -----------------------------------------------------------------------------
+# Computes robustness slices (overall / Q1 / Q2) and efficiency summaries
+# (token usage, cost estimates, aggregation diagnostics).
+#
+# IMPORTANT FRAMING CONSTRAINTS:
+#   1. Cost estimates are snapshot- and environment-dependent.
+#      Prices may change; verify against official pricing before citing.
+#   2. Runtime data is partial: only LLM API call duration is captured.
+#      Per-stage wall-clock requires instrumented runs (not available here).
+#   3. If token/cost fields are absent in a run's JSONL, they are reported
+#      as "not available" — no values are invented.
+#
+# Output locations:
+#   outputs/robustness/   — slice metrics (supplement-ready)
+#   outputs/efficiency/   — token/cost/env/aggregation (supplement-ready)
+#   outputs/manuscript/   — compact tables (manuscript-ready)
+# -----------------------------------------------------------------------------
+robustness_efficiency:
+  robustness_output_dir: outputs/robustness
+  efficiency_output_dir: outputs/efficiency
+
+  # Pricing assumptions — snapshot-dependent; verify before citing in paper.
+  pricing:
+    input_cost_per_million:  3.00     # USD per 1M input tokens; claude-sonnet-4-6
+    output_cost_per_million: 15.00    # USD per 1M output tokens; claude-sonnet-4-6
+    model_note: "claude-sonnet-4-6 (pricing snapshot 2025-08; verify before citing)"
+
+  # Baseline for efficiency comparison.
+  # 'auto' = pick the non-LLM, non-auxiliary system with highest F1_M from E5.
+  # Or set to a specific display_name string (e.g., 'Tfidf', 'Fuzzy').
+  strongest_baseline: auto
+
+  # Q1/Q2 slice: anchor instance is joined to query_frame via instance tables.
+  compute_q1_q2: true
+  instances_and: data/interim/author_instances.parquet
+  instances_ain: data/interim/affil_instances.parquet
+
+
+# -----------------------------------------------------------------------------
+# TASKS
+# -----------------------------------------------------------------------------
+# Which entity-matching tasks to evaluate.
+# Valid values: and, ain
+# Remove a task to skip it entirely.
+# -----------------------------------------------------------------------------
+tasks:
+  - and
+  - ain
+
+
+# -----------------------------------------------------------------------------
+# REPRODUCIBILITY
+# -----------------------------------------------------------------------------
+# Fixed seed for any random operations (bootstrap confidence intervals,
+# stratified sampling in future stages).  Do not change between runs that
+# are meant to be directly comparable.
+# -----------------------------------------------------------------------------
+random_seed: 42
+
+
+# -----------------------------------------------------------------------------
+# RUN CONTROL
+# -----------------------------------------------------------------------------
+# dry_run: true  → print plan and check artefacts only; write no stage outputs.
+#                   The eval_manifest.json IS written (it records the plan).
+# dry_run: false → execute stages.
+#
+# Default is true (plan-first).  Override on the command line with --no-dry-run.
+# -----------------------------------------------------------------------------
+dry_run: true
+
+# force: true → re-compute and overwrite stage outputs that already exist.
+# force: false → skip stages whose outputs are already present (safe default).
+force: false
