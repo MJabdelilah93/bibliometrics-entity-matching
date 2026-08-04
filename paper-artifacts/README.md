@@ -1,7 +1,8 @@
 # Paper artifacts
 
-Frozen artifacts supporting the manuscript *"Governing Uncertainty in Bibliometric Entity
-Matching: An Auditable, Abstention-Aware LLM Workflow for Author and Affiliation Resolution"*.
+Frozen artifacts supporting the manuscript *"Auditable Bibliometric Entity Matching for
+Scholarly Metadata: Benchmarking an Abstention-Aware LLM Workflow against Classical
+Methods"*.
 These files document the exact configurations, tuned thresholds, benchmark labels, and run
 provenance behind the reported results. They are provided for inspection and reuse; the
 pipeline source code in this repository can be rerun on equivalent Scopus exports.
