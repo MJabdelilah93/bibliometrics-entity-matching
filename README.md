@@ -29,10 +29,11 @@ truncation cases and excluded from LLM verification. They are logged as
 **Pairwise labels:** `{match, non-match, uncertain}`.
 `uncertain` is an abstention and defaults to NO MERGE.
 
-**Gold-standard annotation independence:** LLM usage is restricted to code generation,
-QA, and documentation. No LLM is used to suggest or decide match/non-match labels
-for gold-standard annotation. All annotation decisions are made by the human annotator
-from primary evidence only.
+**Gold-standard annotation procedure used in the reported study:** Candidate pairs
+were annotated offline using structured evidence-packet spreadsheets. Labels were
+assigned by one domain expert and reviewed by a second. The repository preserves the
+final adjudicated label for each pair rather than separate reviewer-label files. No LLM
+was used to suggest or decide the gold-standard labels.
 
 ---
 
@@ -134,10 +135,12 @@ python tests/test_config_load.py
 
 ---
 
-## One-time setup — Label Studio export placement
+## Optional integration — Label Studio export conversion
 
-Before running C5 verification for the first time, place your Label Studio
-annotation export in `data/derived/`:
+The benchmark reported in the associated manuscript was annotated offline using
+structured evidence-packet spreadsheets, not Label Studio. The Label Studio converter
+is retained only as an optional integration. Users choosing this route should place
+their annotation export in `data/derived/`:
 
 | Export format | Target path |
 |---|---|
@@ -251,11 +254,13 @@ exact converter command and skips that task gracefully.
 
 ---
 
-## Benchmark without Label Studio
+## Benchmark procedure used in the reported study
 
-Gold labels are assigned by the human researcher from primary evidence only —
-**no LLM assistance at any step**.  The three-step workflow below produces the
-benchmark parquets that C5 reads.
+The benchmark reported in the associated manuscript was annotated offline through
+structured evidence-packet spreadsheets. Gold labels were assigned from the
+Scopus-derived evidence and reviewed manually, with **no LLM assistance in label
+assignment or review**. The workflow below produces the benchmark Parquet files
+that C5 reads.
 
 ### Step 1 — Sample pairs
 
@@ -372,8 +377,10 @@ to `runs/<run_id>/logs/` (`backend: requests_only`).  Switch to `backend: anthro
 
 ### Optional — Auto-fill clear cases (deterministic)
 
-After building the evidence packets (Step 2 above), you can pre-fill the obvious
-`match` / `non-match` rows before opening the spreadsheet:
+This optional utility was not used to determine the gold-standard labels reported
+in the associated manuscript. Those labels were assigned and reviewed manually
+from the evidence-packet spreadsheets. For other applications, users may pre-fill
+obvious `match` or `non-match` cases before manual review:
 
 ```bash
 python -m bem.benchmark.autofill_gold_labels \
